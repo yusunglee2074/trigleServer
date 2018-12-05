@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // before graphql check things
 app.use((req, res, next) => {
+  next();
 })
 app.use('/graphql', graphqlHTTP({
   schema,
