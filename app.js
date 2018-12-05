@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const graphqlHTTP = require('express-graphql');
 
-const schema = require('./schemas');
+const schema = require('./schema');
 
 const app = express();
 
@@ -19,8 +19,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
   next();
 })
+
+const rootValue = {
+  hello: () => {
+    return '안녕!';
+  }
+
+}
+
 app.use('/graphql', graphqlHTTP({
   schema,
+  rootValue,
   graphiql: true,
 }));
 
