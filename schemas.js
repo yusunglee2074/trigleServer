@@ -20,7 +20,8 @@ const {
   ExtraEnvType,
   KeywordType,
   AddressType,
-  CommneType,
+  CommentType,
+  UserKeywordsType,
 } = require('./tableSchemas');
 
 

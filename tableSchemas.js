@@ -93,7 +93,7 @@ const GiftType = new GraphQLObjectType({
   })
 });
 
-const CommneType = new GraphQLObjectType({
+const CommentType = new GraphQLObjectType({
   name: 'Comment',
   fields: () => ({
     id: { type: GraphQLID },
@@ -167,5 +167,6 @@ module.exports = {
   ExtraEnvType,
   KeywordType,
   AddressType,
-  CommneType,
+  CommentType,
+  UserKeywordsType
 }
