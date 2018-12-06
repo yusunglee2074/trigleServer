@@ -22,7 +22,6 @@ app.use((req, res, next) => {
   next();
 })
 
-let context = {}
 
 // db connection
 const dbConfig = {
@@ -41,15 +40,16 @@ if (mongoose.connection.readyState ==! 2) {
   throw Error("DB is not connected");
 } else {
   console.log("DB is connected to \"" + dbConnection.name + "\"");
-  context = {...context, mongoose }
 };
+
+let context = {}
 
 app.use('/graphql', graphqlHTTP((req, res) => ({
   schema,
   rootValue,
   context: {
     ...context,
-    request: req
+    req
   },
   graphiql: true,
 })));
