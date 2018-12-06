@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const graphqlHTTP = require('express-graphql');
+const mongoose = require('mongoose');
 
 const schema = require('./schema');
 const rootValue = require('./rootValue');
@@ -21,12 +22,37 @@ app.use((req, res, next) => {
   next();
 })
 
-app.use('/graphql', graphqlHTTP({
+let context = {}
+
+// db connection
+const dbConfig = {
+  dev: {
+    name: 'dev',
+    host: '10.211.55.5:27017/trigle-dev'
+  },
+  production: {
+    name: 'production',
+  }
+}
+const dbConnection = dbConfig.dev
+// const dbConnection = dbConfig.production
+mongoose.connect('mongodb://' + dbConnection.host, { useNewUrlParser: true });
+if (mongoose.connection.readyState ==! 2) {
+  throw Error("DB is not connected");
+} else {
+  console.log("DB is connected to \"" + dbConnection.name + "\"");
+  context = {...context, mongoose }
+};
+
+app.use('/graphql', graphqlHTTP((req, res) => ({
   schema,
   rootValue,
+  context: {
+    ...context,
+    request: req
+  },
   graphiql: true,
-}));
-
+})));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
