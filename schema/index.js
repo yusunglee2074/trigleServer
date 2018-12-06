@@ -20,7 +20,7 @@ const schemas = [Address, User, Keyword, Comments, ExtraEnv, Gift, Like, Mail, M
 const dbConfig = {
   dev: {
     name: 'dev',
-    host: '10.10.100.24:27017/trigle-dev'
+    host: '10.211.55.5:27017/trigle-dev'
   },
   production: {
     name: 'production',
