@@ -35,12 +35,10 @@ const dbConfig = {
 }
 const dbConnection = dbConfig.dev
 // const dbConnection = dbConfig.production
-mongoose.connect('mongodb://' + dbConnection.host, { useNewUrlParser: true });
-if (mongoose.connection.readyState ==! 2) {
-  throw Error("DB is not connected");
-} else {
-  console.log("DB is connected to \"" + dbConnection.name + "\"");
-};
+mongoose.connect('mongodb://' + dbConnection.host, { useNewUrlParser: true }, (e) => {
+  if (!e) console.log("DB is connected to \"" + dbConnection.name + "\"");
+  else console.log("DB is not connected\n" + e);
+});
 
 let context = {}
 
