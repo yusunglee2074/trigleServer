@@ -15,7 +15,7 @@ const userSchema = new Schema({
   phoneNumber: String,
   gender: String,
   birthDay: String,
-  profileImage: String,
+  profileImage: { type: Schema.Types.ObjectId, ref: 'Media' },
   numberOfStamps: Number,
   createdAt: Date,
   updatedAt: Date,
@@ -52,7 +52,7 @@ module.exports = {
   }
   `,
   queries: `
-  user: User
+  user(id: ID): User
   users: [User]
   `,
   mutations: `
