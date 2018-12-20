@@ -47,8 +47,37 @@ module.exports = {
   }
   input userCreateInput {
     loginId: String
+    password: String
+    name: String
+    nickname: String
+    age: Int
+    replyRate: Int
+    lastOnlinedAt: String
+    address1: String
+    address2: String
+    detailAddress: String
+    phoneNumber: String
+    gender: String
+    birthDay: String
     profileImage: ID
-    createdAt: String
+    numberOfStamps: Int
+  }
+  input userUpdateInput {
+    loginId: String
+    password: String
+    name: String
+    nickname: String
+    age: Int
+    replyRate: Int
+    lastOnlinedAt: String
+    address1: String
+    address2: String
+    detailAddress: String
+    phoneNumber: String
+    gender: String
+    birthDay: String
+    profileImage: ID
+    numberOfStamps: Int
   }
   `,
   queries: `
@@ -56,8 +85,8 @@ module.exports = {
   users: [User]
   `,
   mutations: `
-  createUser(input: userCreateInput!) : User
-  updateUser: User
-  deleteUser: Boolean
+  createUser(input: userCreateInput) : User
+  updateUser(id: ID, input: userUpdateInput): User
+  deleteUser(id: ID): Boolean
   `
 }
