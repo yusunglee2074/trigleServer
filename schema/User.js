@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  id: Number,
   loginId: String,
   password: String,
   name: String,
@@ -27,7 +26,7 @@ module.exports = {
   model,
   types: `
   type User {
-    id: Int!
+    id: ID
     loginId: String
     password: String
     name: String
