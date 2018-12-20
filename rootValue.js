@@ -12,41 +12,30 @@ module.exports = {
 
   // User
   user: (args, ctx, info) => {
-    return User.findById(args.id, (e, user) => {
-      if (e) {
-        throw e;
-      }
-      return user;
-    })
+    return User.findById(args.id).populate('profileImage').exec()
   },
   users: (args, ctx, info) => {
-    return User.find({}, (e, user) => {
-      if (e) {
-        throw e;
-      }
-      return user;
-    })
+    return User.find({}).populate('profileImage').exec()
   },
   createUser: (args, ctx, info) => {
     let user = new User({
-      id: args.input.id,
       loginId: args.input.loginId,
       password: args.input.password,
-      name: String,
-      nickname: String,
-      age: Number,
-      replyRate: Number,
-      lastOnlinedAt: String,
-      address1: String,
-      address2: String,
-      detailAddress: String,
-      phoneNumber: String,
-      gender: String,
-      birthDay: String,
-      profileImage: String,
-      numberOfStamps: Number,
-      createdAt: Date,
-      updatedAt: Date,
+      name: args.input.name,
+      nickname: args.input.nickname,
+      age: args.input.age,
+      replyRate: args.input.replyRate,
+      lastOnlinedAt: args.input.lastOnlinedAt,
+      address1: args.input.address1,
+      address2: args.input.address2,
+      detailAddress: args.input.detailAddress,
+      phoneNumber: args.input.phoneNumber,
+      gender: args.input.gender,
+      birthDay: args.input.birthDay,
+      profileImage: args.input.profileImage,
+      numberOfStamps: args.input.numberOfStamps,
+      createdAt: args.input.createdAt,
+      updatedAt: args.input.updatedAt
     })
     return user.save();
   },
