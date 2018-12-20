@@ -66,7 +66,6 @@ module.exports = {
   },
   medias: (args, ctx, info) => {
     return Media.find({}, (e, medias) => {
-      console.log(medias)
       if (e) {
         throw e;
       }
