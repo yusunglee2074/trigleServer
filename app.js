@@ -7,7 +7,6 @@ const graphqlHTTP = require('express-graphql');
 const mongoose = require('mongoose');
 
 const schema = require('./schema');
-const rootValue = require('./rootValue');
 
 const app = express();
 

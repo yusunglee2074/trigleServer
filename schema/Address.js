@@ -24,7 +24,7 @@ const addressSchema = new Schema({
     numberOfSent: Number,
     numberOfReceived: Number,
 });
-let model = mongoose.model('Address', addressSchema);
+const model = mongoose.model('Address', addressSchema);
 
 const AddressType = new GraphQLObjectType({
   name: 'Address',
@@ -50,13 +50,13 @@ const Query = {
       id: { type: new GraphQLNonNull(GraphQLID) }
     },
     resolve(root, args, req, ctx) {
-      console.log("첫번째")
+      return model.findById(args.id);
     }
   },
   addresses: {
     type: new GraphQLList(AddressType),
     resolve(root, args, req, ctx) {
-      console.log("두번째")
+      return model.find({});
     }
   }
 }
