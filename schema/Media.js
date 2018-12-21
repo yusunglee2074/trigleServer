@@ -1,18 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const graphql = require('graphql');
-const {
-  GraphQLEnumType,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLSchema,
-  GraphQLString,
-  GraphQLID,
-  GraphQLInt,
-  GraphQLBoolean
-} = graphql;
+const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const mediaSchema = new Schema({
     url: String,
@@ -57,18 +46,23 @@ const Mutation = {
       text: { type: GraphQLString, },
     },
     resolve(root, args, req, ctx) {
-      let media = new model(args.input);
+      args.createdAt = new Date().toISOString();
+      let media = new model(args);
       return media.save();
     }
   },
   updateMedia: {
     type: MediaType,
     args: {
+      id: { type: GraphQLID },
       url: { type: GraphQLString, },
       text: { type: GraphQLString, },
     },
     resolve(root, args, req, ctx) {
-    return model.findByIdAndUpdate(args.id, args.input, { new: true });
+      let id = args.id;
+      delete args.id;
+      args.updatedAt = new Date().toISOString();
+      return model.findByIdAndUpdate(args.id, args, { new: true });
     }
   },
   deleteMedia: {
