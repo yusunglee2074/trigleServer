@@ -44,7 +44,7 @@ let context = {}
 
 app.use('/graphql', graphqlHTTP((req, res) => ({
   schema,
-  rootValue,
+  //rootValue,
   context: {
     ...context,
     req

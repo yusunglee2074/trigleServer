@@ -1,5 +1,18 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const graphql = require('graphql');
+const {
+  GraphQLEnumType,
+  GraphQLInterfaceType,
+  GraphQLObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLSchema,
+  GraphQLString,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLBoolean
+} = graphql;
 
 const addressSchema = new Schema({
     receiverName: String,
@@ -11,45 +24,71 @@ const addressSchema = new Schema({
     numberOfSent: Number,
     numberOfReceived: Number,
 });
-
 let model = mongoose.model('Address', addressSchema);
 
-module.exports = { model, types: `
-  type Address {
-    id: ID!
-    receiverName: String
-    receiverId: User
-    address1: String
-    address2: String
-    detailAddress: String
-    profileImage: Media
-    numberOfSent: Int
-    numberOfReceived: Int
+const AddressType = new GraphQLObjectType({
+  name: 'Address',
+  fields: () => ({
+    id: { type: GraphQLNonNull(GraphQLID), },
+    receiverName: { type: GraphQLNonNull(GraphQLString), },
+    // receiverId: { type: UserType, },
+    receiverId: { type: GraphQLNonNull(GraphQLString), },
+    address1: { type: GraphQLNonNull(GraphQLString), },
+    address2: { type: GraphQLNonNull(GraphQLString), },
+    detailAddress: { type: GraphQLNonNull(GraphQLString), },
+    // profileImage: { type: MediaType, },
+    profileImage: { type: GraphQLNonNull(GraphQLString), },
+    numberOfSent: { type: GraphQLNonNull(GraphQLInt), },
+    numberOfReceived: { type: GraphQLNonNull(GraphQLInt), },
+  }),
+});
+
+const Query = {
+  address: {
+    type: AddressType,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    resolve(root, args, req, ctx) {
+      console.log("첫번째")
+    }
+  },
+  addresses: {
+    type: new GraphQLList(AddressType),
+    resolve(root, args, req, ctx) {
+      console.log("두번째")
+    }
   }
-  input addressCreateInput {
-    receiverName: String
-    receiverId: ID 
-    address1: String
-    address2: String
-    detailAddress: String
-    profileImage: ID
-  }
-  input addressUpdateInput {
-    receiverName: String
-    receiverId: ID 
-    address1: String
-    address2: String
-    detailAddress: String
-    profileImage: ID
-  }
-  `,
-  queries: `
-  addresses: [Address]
-  address(id: ID!): Address
-  `,
-  mutations: `
-  createAddress(input: addressCreateInput): Address
-  updateAddress(input: addressUpdateInput, id: Int): Address
-  deleteAddress(id: Int!): Boolean
-  `
 }
+
+const Mutation = {
+  createAddress: {
+    type: AddressType,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    resolve(root, args, req, ctx) {
+      console.log("첫번째")
+    }
+  },
+  updateAddress: {
+    type: AddressType,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    resolve(root, args, req, ctx) {
+      console.log("첫번째")
+    }
+  },
+  deleteAddress: {
+    type: GraphQLBoolean,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    resolve(root, args, req, ctx) {
+      console.log("뮤테이션")
+    }
+  },
+}
+
+module.exports = { model, AddressType, Query, Mutation }
