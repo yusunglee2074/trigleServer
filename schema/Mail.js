@@ -38,32 +38,32 @@ module.exports = { model, types: `
   }
   input MailCreateInput {
     receiver: String
-    receiverId: User
+    receiverId: ID
     sender: String
-    senderId: User
+    senderId: ID
     contents: String
     paperId: String
     envelopeId: String
     numberOfWord: Int
     missing: Boolean
     likes: Int
-    images: Media
-    videos: Media
+    images: ID
+    videos: ID
     willSendAt: String
   }
   input MailUpdateInput {
     receiver: String
-    receiverId: User
+    receiverId: ID
     sender: String
-    senderId: User
+    senderId: ID
     contents: String
     paperId: String
     envelopeId: String
     numberOfWord: Int
     missing: Boolean
     likes: Int
-    images: Media
-    videos: Media
+    images: ID
+    videos: ID
     willSendAt: String
   }
   `,

@@ -26,14 +26,14 @@ module.exports = { model, types: `
     type: String
     title: String
     contents: String
-    userId: User
+    userId: ID
     updatedAt: String
   }
   input extraEnvUpdateInput {
     type: String
     title: String
     contents: String
-    userId: User
+    userId: ID
     updatedAt: String
   }
   `,

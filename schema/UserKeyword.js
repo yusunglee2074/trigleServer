@@ -13,12 +13,12 @@ module.exports = { model, types: `
     keywordId: Keyword
   }
   input UserKeywordCreateInput {
-    userId: User
-    keywordId: Keyword
+    userId: ID
+    keywordId: ID
   }
   input UserKeywordUpdateInput {
-    userId: User
-    keywordId: Keyword
+    userId: ID
+    keywordId: ID
   }
   `,
   queries: `

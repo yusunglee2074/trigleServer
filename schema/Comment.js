@@ -26,7 +26,7 @@ module.exports = { model, types: `
     user: ID
     content: String
     nickname: String
-    profileImage: Media
+    profileImage: ID
     createdAt: String 
     updatedAt: String
   }
@@ -34,7 +34,7 @@ module.exports = { model, types: `
     user: ID
     content: String
     nickname: String
-    profileImage: Media
+    profileImage: ID 
     createdAt: String 
     updatedAt: String
   }`,

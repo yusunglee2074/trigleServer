@@ -23,17 +23,17 @@ module.exports = { model, types: `
   }
   input LikeCreateInput {
     type: String
-    userId: User
-    mailId: Mail
+    userId: ID
+    mailId: ID
     nickname: String
-    profileImage: Media
+    profileImage: ID
   }
   input LikeUpdateInput {
     type: String
-    userId: User
-    mailId: Mail
+    userId: ID
+    mailId: ID
     nickname: String
-    profileImage: Media
+    profileImage: ID
   }
   `,
   queries: `

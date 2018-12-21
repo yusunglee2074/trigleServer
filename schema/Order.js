@@ -18,12 +18,12 @@ module.exports = { model, types: `
     createdAt: String
   }
   input OrderCreateInput {
-    userId: User
+    userId: ID
     amount: Int
     status: String
   }
   input OrderUpdateInput {
-    userId: User
+    userId: ID
     amount: Int
     status: String
   }

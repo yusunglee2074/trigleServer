@@ -21,14 +21,14 @@ module.exports = { model, types: `
     createdAt: String
   }
   input GiftCreateInput {
-    senderId: User
-    receiverId: User
+    senderId: ID
+    receiverId: ID
     amount: Int
     message: String
   }
   input GiftUpdateInput {
-    senderId: User
-    receiverId: User
+    senderId: ID
+    receiverId: ID
     amount: Int
     message: String
   }
