@@ -78,6 +78,7 @@ module.exports = {
     birthDay: String
     profileImage: ID
     numberOfStamps: Int
+    updatedAt: String
   }
   `,
   queries: `

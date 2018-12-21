@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const mediaSchema = new Schema({
     url: String,
     text: String,
-    createdAt: String
+    createdAt: Date
 });
 let model = mongoose.model('Media', mediaSchema);
 

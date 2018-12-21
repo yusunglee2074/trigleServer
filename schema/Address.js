@@ -1,31 +1,55 @@
-module.exports = { types: `
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const addressSchema = new Schema({
+    receiverName: String,
+    receiverId: { type: Schema.Types.ObjectId, ref: 'User' },
+    address1: String,
+    address2: String,
+    detailAddress: String,
+    profileImage: { type: Schema.Types.ObjectId, ref: 'Media' },
+    numberOfSent: Number,
+    numberOfReceived: Number,
+});
+
+let model = mongoose.model('Address', addressSchema);
+
+module.exports = { model, types: `
   type Address {
-    id: Int!
+    id: ID!
     receiverName: String
-    receiverId: ID
+    receiverId: User
+    address1: String
+    address2: String
+    detailAddress: String
+    profileImage: Media
+    numberOfSent: Int
+    numberOfReceived: Int
+  }
+  input addressCreateInput {
+    receiverName: String
+    receiverId: ID 
     address1: String
     address2: String
     detailAddress: String
     profileImage: ID
-    numberOfSent: Int
-    numberOfReceived: Int
   }
-  input addressInput {
+  input addressUpdateInput {
     receiverName: String
-    receiverId: String
+    receiverId: ID 
     address1: String
     address2: String
     detailAddress: String
-    profileImage: String
+    profileImage: ID
   }
   `,
   queries: `
-  getAddresses: [Address]
-  getAddress(id: Int!): Address
+  addresses: [Address]
+  address(id: ID!): Address
   `,
   mutations: `
-  createAddress(input: addressInput, id: Int): Address
-  updateAddress(input: addressInput): Address
+  createAddress(input: addressCreateInput): Address
+  updateAddress(input: addressUpdateInput, id: Int): Address
   deleteAddress(id: Int!): Boolean
   `
 }
