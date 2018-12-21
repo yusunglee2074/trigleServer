@@ -1,18 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const graphql = require('graphql');
-const {
-  GraphQLEnumType,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLSchema,
-  GraphQLString,
-  GraphQLID,
-  GraphQLInt,
-  GraphQLBoolean
-} = graphql;
+const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const userSchema = new Schema({
   loginId: String,
@@ -100,6 +89,7 @@ const Mutation = {
       numberOfStamps: { type: GraphQLInt, },
     },
     resolve(root, args, req, ctx) {
+      args.createdAt = new Date().toISOString();
       let user = new model(args);
       return user.save();
     }
@@ -107,6 +97,7 @@ const Mutation = {
   updateUser: {
     type: UserType,
     args: {
+      id: { type: GraphQLID },
       loginId: { type: GraphQLString, },
       password: { type: GraphQLString, },
       name: { type: GraphQLString, },
@@ -122,7 +113,10 @@ const Mutation = {
       numberOfStamps: { type: GraphQLInt, },
     },
     resolve(root, args, req, ctx) {
-      return model.findByIdAndUpdate(args.id, args, { new: true });
+      let id = args.id;
+      delete args.id;
+      args.updatedAt = new Date().toISOString();
+      return model.findByIdAndUpdate(id, args, { new: true });
     }
   },
   deleteUser: {
