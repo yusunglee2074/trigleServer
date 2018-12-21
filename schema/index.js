@@ -4,6 +4,8 @@ const fs = require('fs');
 
 let queryFields = {}
 let mutationFields = {}
+
+// 현재 폴더내의 모든 파일들을 긁어 mutation과 query를 하나의 object로 합침
 fs
   .readdirSync(__dirname)
   .filter((file) => {
