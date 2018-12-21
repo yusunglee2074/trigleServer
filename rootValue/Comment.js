@@ -1,22 +1,22 @@
-const User = require('./../schema/User').model;
+const Comment = require('./../schema/Comment').model;
 
 module.exports = {
-  user: (args, ctx, info) => {
+  comment: (args, ctx, info) => {
     console.log(ctx)
-    return User.findById(args.id).populate('profileImage').exec()
+    return Comment.findById(args.id).populate('profileImage').exec()
   },
-  users: (args, ctx, info) => {
-    return User.find({}).populate('profileImage').exec()
+  comments: (args, ctx, info) => {
+    return Comment.find({}).populate('profileImage').exec()
   },
-  createUser: (args, ctx, info) => {
-    let user = new User(args.input);
-    return user.save();
+  createComment: (args, ctx, info) => {
+    let comment = new Comment(args.input);
+    return comment.save();
   },
-  updateUser: (args, ctx, info) => {
-    return User.findByIdAndUpdate(args.id, args.input, { new: true });
+  updateComment: (args, ctx, info) => {
+    return Comment.findByIdAndUpdate(args.id, args.input, { new: true });
   },
-  deleteUser: async (args, ctx, info) => {
-    if (await User.findByIdAndDelete(args.id)) return true;
+  deleteComment: async (args, ctx, info) => {
+    if (await Comment.findByIdAndDelete(args.id)) return true;
     return false;
   },
 }

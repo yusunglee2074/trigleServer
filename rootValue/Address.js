@@ -1,22 +1,21 @@
-const User = require('./../schema/User').model;
+const Address = require('./../schema/Address').model;
 
 module.exports = {
-  user: (args, ctx, info) => {
-    console.log(ctx)
-    return User.findById(args.id).populate('profileImage').exec()
+  address: (args, ctx, info) => {
+    return Address.findById(args.id).populate('profileImage').populate('receiverId').exec()
   },
-  users: (args, ctx, info) => {
-    return User.find({}).populate('profileImage').exec()
+  addresses: (args, ctx, info) => {
+    return Address.find({}).populate('receiverId').populate('profileImage').exec()
   },
-  createUser: (args, ctx, info) => {
-    let user = new User(args.input);
-    return user.save();
+  createAddress: (args, ctx, info) => {
+    let address = new Address(args.input);
+    return address.save();
   },
-  updateUser: (args, ctx, info) => {
-    return User.findByIdAndUpdate(args.id, args.input, { new: true });
+  updateAddress: (args, ctx, info) => {
+    return Address.findByIdAndUpdate(args.id, args.input, { new: true });
   },
-  deleteUser: async (args, ctx, info) => {
-    if (await User.findByIdAndDelete(args.id)) return true;
+  deleteAddress: async (args, ctx, info) => {
+    if (await Address.findByIdAndDelete(args.id)) return true;
     return false;
   },
 }
