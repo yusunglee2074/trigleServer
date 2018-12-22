@@ -25,7 +25,7 @@ const UserKeywordType = new GraphQLObjectType({
       }
     },
     keywordId: {
-      type: MediaType,
+      type: KeywordType,
       resolve(parent, args) {
         return Keyword.findById(parent.keywordId);
       }
