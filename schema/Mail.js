@@ -1,79 +1,189 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const graphql = require('graphql');
+const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const mailSchema = new Schema({
     receiver: String,
-    receiverId: { type: Schema.Types.ObjectId, ref: 'User' },
+    receiverId: String,
     sender: String,
-    senderId: { type: Schema.Types.ObjectId, ref: 'User' },
-    contents: String,
+    senderId: String,
+    content: String,
     paperId: String,
     envelopeId: String,
     numberOfWord: Number,
     missing: Boolean,
     likes: Number ,
-    images: { type: Schema.Types.ObjectId, ref: 'Media' },
-    videos: { type: Schema.Types.ObjectId, ref: 'Media' },
+    images: String,
+    videos: String,
+  price: Number,
     createdAt: Date,
-    willSendAt: Date 
+    willSendAt: Date
 })
+
 let model = mongoose.model('Mail', mailSchema);
-module.exports = { model, types: `
-  type Mail {
-    id: ID!
-    receiver: String
-    receiverId: User
-    sender: String
-    senderId: User
-    contents: String
-    paperId: String
-    envelopeId: String
-    numberOfWord: Int
-    missing: Boolean
-    likes: Int
-    images: Media
-    videos: Media
-    createdAt: String
-    willSendAt: String
+
+const Media = require('./Media').model
+const MediaType = require('./Media').MediaType
+const User = require('./User').model
+const UserType = require('./User').UserType
+const ExtraEnv = require('./ExtraEnv').model
+const ExtraEnvType = require('./ExtraEnv').ExtraEnvType
+
+const MailType = new GraphQLObjectType({
+  name: 'Mail',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLID), },
+    receiver: { type: GraphQLString, },
+    sender: { type: GraphQLString, },
+    content: { type: GraphQLString, },
+    numberOfWord: { type: GraphQLInt, },
+    missing: { type: GraphQLBoolean, },
+    likes: { type: GraphQLInt, },
+    price: { type: GraphQLInt, },
+    senderId: {
+      type: UserType,
+      resolve(parent, args) {
+        return User.findById(parent.senderId);
+      }
+    },
+    receiverId: {
+      type: User,
+      resolve(parent, args) {
+        return Media.findById(parent.receiverId);
+      }
+    },
+    paperId: {
+      type: ExtraEnvType,
+      resolve(parent, args) {
+        return ExtraEnv.findById(parent.paperId);
+      }
+    },
+    envelopeId: {
+      type: ExtraEnvType,
+      resolve(parent, args) {
+        return ExtraEnv.findById(parent.envelopeId);
+      }
+    },
+    images: {
+      type: MediaType,
+      resolve(parent, args) {
+        return Media.findById(parent.images);
+      }
+    },
+    videos: {
+      type: MediaType,
+      resolve(parent, args) {
+        return Media.findById(parent.videos);
+      }
+    },
+    willSendAt: { type: GraphQLString, },
+    createdAt: { type: GraphQLString, },
+  }),
+});
+
+const Query = {
+  mail: {
+    type: MailType,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    resolve(root, args, req, ctx) {
+      return model.findById(args.id);
+    }
+  },
+  mails: {
+    type: new GraphQLList(MailType),
+    resolve(root, args, req, ctx) {
+      return model.find({});
+    }
   }
-  input MailCreateInput {
-    receiver: String
-    receiverId: ID
-    sender: String
-    senderId: ID
-    contents: String
-    paperId: String
-    envelopeId: String
-    numberOfWord: Int
-    missing: Boolean
-    likes: Int
-    images: ID
-    videos: ID
-    willSendAt: String
-  }
-  input MailUpdateInput {
-    receiver: String
-    receiverId: ID
-    sender: String
-    senderId: ID
-    contents: String
-    paperId: String
-    envelopeId: String
-    numberOfWord: Int
-    missing: Boolean
-    likes: Int
-    images: ID
-    videos: ID
-    willSendAt: String
-  }
-  `,
-  queries: `
-  mail(id: ID): Mail 
-  mails: [Mail]
-  `,
-  mutations: `
-  createMail(input: MailCreateInput) : Mail
-  updateMail(id: ID, input: MailUpdateInput): Mail
-  deleteMail(id: ID): Boolean
-  `
 }
+
+const Mutation = {
+  createMail: {
+    type: MailType,
+    args: {
+      receiver: { type: GraphQLString, },
+      sender: { type: GraphQLString, },
+      content: { type: GraphQLString, },
+      numberOfWord: { type: GraphQLInt, },
+      missing: { type: GraphQLBoolean, },
+      likes: { type: GraphQLInt, },
+      price: { type: GraphQLInt, },
+      senderId: {
+        type: GraphQLID,
+      },
+      receiverId: {
+        type: GraphQLID,
+      },
+      paperId: {
+        type: GraphQLID,
+      },
+      envelopeId: {
+        type: GraphQLID,
+      },
+      images: {
+        type: GraphQLID,
+      },
+      videos: {
+        type: GraphQLID,
+      },
+      willSendAt: { type: GraphQLString, },
+    },
+    resolve(root, args, req, ctx) {
+      args.createdAt = new Date().toISOString();
+      let mail = new model(args);
+      return mail.save();
+    }
+  },
+  updateMail: {
+    type: MailType,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID), },
+      receiver: { type: GraphQLString, },
+      sender: { type: GraphQLString, },
+      content: { type: GraphQLString, },
+      numberOfWord: { type: GraphQLInt, },
+      missing: { type: GraphQLBoolean, },
+      likes: { type: GraphQLInt, },
+      price: { type: GraphQLInt, },
+      senderId: {
+        type: GraphQLID,
+      },
+      receiverId: {
+        type: GraphQLID,
+      },
+      paperId: {
+        type: GraphQLID,
+      },
+      envelopeId: {
+        type: GraphQLID,
+      },
+      images: {
+        type: GraphQLID,
+      },
+      videos: {
+        type: GraphQLID,
+      },
+      willSendAt: { type: GraphQLString, },
+    },
+    resolve(root, args, req, ctx) {
+      let id = args.id;
+      delete args.id;
+      return model.findByIdAndUpdate(id, args, { new: true });
+    }
+  },
+  deleteMail: {
+    type: GraphQLBoolean,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    async resolve(root, args, req, ctx) {
+      if (await model.findByIdAndDelete(args.id)) return true;
+      return false;
+    }
+  },
+}
+
+module.exports = { model, MailType, Query, Mutation };

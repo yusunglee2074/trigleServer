@@ -1,48 +1,125 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const graphql = require('graphql');
+const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const likeSchema = new Schema({
     type: String,
-    userId: { type: Schema.Types.ObjectId, ref: 'User' },
-    mailId: { type: Schema.Types.ObjectId, ref: 'Mail' },
+    userId: String,
+    mailId: String,
     nickname: String,
-    profileImage: { type: Schema.Types.ObjectId, ref: 'Media' },
+    profileImage: String,
     createdAt: Date,
 });
 
 let model = mongoose.model('Like', likeSchema);
-module.exports = { model, types: `
-  type Like {
-    id: ID!
-    type: String
-    userId: User
-    mailId: Mail
-    nickname: String
-    profileImage: Media
-    createdAt: String
+
+const Media = require('./Media').model
+const MediaType = require('./Media').MediaType
+const User = require('./User').model
+const UserType = require('./User').UserType
+const Mail = require('./Mail').model
+const MailType = require('./Mail').MailType
+
+const LikeType = new GraphQLObjectType({
+  name: 'Like',
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLID), },
+    type: { type: GraphQLString, },
+    nickname: { type: GraphQLString, },
+    userId: {
+      type: UserType,
+      resolve(parent, args) {
+        return User.findById(parent.userId);
+      }
+    },
+    mailId: {
+      type: MailType,
+      resolve(parent, args) {
+        return Mail.findById(parent.mailId);
+      }
+    },
+    profileImage: {
+      type: MediaType,
+      resolve(parent, args) {
+        return Media.findById(parent.profileImage);
+      }
+    },
+    createdAt: { type: GraphQLString, },
+  }),
+});
+
+const Query = {
+  like: {
+    type: LikeType,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    resolve(root, args, req, ctx) {
+      return model.findById(args.id);
+    }
+  },
+  likes: {
+    type: new GraphQLList(LikeType),
+    resolve(root, args, req, ctx) {
+      return model.find({});
+    }
   }
-  input LikeCreateInput {
-    type: String
-    userId: ID
-    mailId: ID
-    nickname: String
-    profileImage: ID
-  }
-  input LikeUpdateInput {
-    type: String
-    userId: ID
-    mailId: ID
-    nickname: String
-    profileImage: ID
-  }
-  `,
-  queries: `
-  like(id: ID): Like
-  likes: [Like]
-  `,
-  mutations: `
-  createLike(input: LikeCreateInput) : Like
-  updateLike(id: ID, input: LikeUpdateInput): Like
-  deleteLike(id: ID): Boolean
-  `
 }
+
+const Mutation = {
+  createLike: {
+    type: LikeType,
+    args: {
+      type: { type: GraphQLString, },
+      nickname: { type: GraphQLString, },
+      userId: {
+        type: GraphQLID,
+      },
+      mailId: {
+        type: GraphQLID,
+      },
+      profileImage: {
+        type: GraphQLID,
+      },
+    },
+    resolve(root, args, req, ctx) {
+      args.createdAt = new Date().toISOString();
+      let like = new model(args);
+      return like.save();
+    }
+  },
+  updateLike: {
+    type: LikeType,
+    args: {
+      type: { type: GraphQLString, },
+      nickname: { type: GraphQLString, },
+      userId: {
+        type: GraphQLID,
+      },
+      mailId: {
+        type: GraphQLID,
+      },
+      profileImage: {
+        type: GraphQLID,
+      },
+    },
+    resolve(root, args, req, ctx) {
+      let id = args.id;
+      delete args.id;
+      return model.findByIdAndUpdate(id, args, { new: true });
+    }
+  },
+  deleteLike: {
+    type: GraphQLBoolean,
+    args: {
+      id: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    async resolve(root, args, req, ctx) {
+      if (await model.findByIdAndDelete(args.id)) return true;
+      return false;
+    }
+  },
+}
+
+module.exports = { model, LikeType, Query, Mutation };

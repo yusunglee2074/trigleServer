@@ -1,45 +1,48 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const graphql = require('graphql');
-const {
-  GraphQLEnumType,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-  GraphQLList,
-  GraphQLNonNull,
-  GraphQLSchema,
-  GraphQLString,
-  GraphQLID,
-  GraphQLInt,
-  GraphQLBoolean
-} = graphql;
+const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const addressSchema = new Schema({
     receiverName: String,
-    receiverId: { type: Schema.Types.ObjectId, ref: 'User' },
+    receiverId: String,
     address1: String,
     address2: String,
     detailAddress: String,
-    profileImage: { type: Schema.Types.ObjectId, ref: 'Media' },
+    profileImage: String,
     numberOfSent: Number,
     numberOfReceived: Number,
 });
 const model = mongoose.model('Address', addressSchema);
 
+
+const Media = require('./Media').model
+const MediaType = require('./Media').MediaType
+const User = require('./User').model
+const UserType = require('./User').UserType
+
 const AddressType = new GraphQLObjectType({
   name: 'Address',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLID), },
-    receiverName: { type: GraphQLNonNull(GraphQLString), },
-    // receiverId: { type: UserType, },
-    receiverId: { type: GraphQLNonNull(GraphQLString), },
-    address1: { type: GraphQLNonNull(GraphQLString), },
-    address2: { type: GraphQLNonNull(GraphQLString), },
-    detailAddress: { type: GraphQLNonNull(GraphQLString), },
-    // profileImage: { type: MediaType, },
-    profileImage: { type: GraphQLNonNull(GraphQLString), },
-    numberOfSent: { type: GraphQLNonNull(GraphQLInt), },
-    numberOfReceived: { type: GraphQLNonNull(GraphQLInt), },
+    receiverId: { 
+      type: UserType,
+      resolve(parent, args) {
+        return User.findById(parent.receiverId);
+      }
+    },
+    receiverName: { type: GraphQLString, },
+    address1: { type: GraphQLString, },
+    address2: { type: GraphQLString, },
+    detailAddress: { type: GraphQLString, },
+    profileImage: { 
+      type: MediaType,
+      resolve(parent, args) {
+        return Media.findById(parent.profileImage);
+      }
+    },
+    numberOfSent: { type: GraphQLInt, },
+    numberOfReceived: { type: GraphQLInt, },
   }),
 });
 
@@ -65,19 +68,45 @@ const Mutation = {
   createAddress: {
     type: AddressType,
     args: {
-      id: { type: new GraphQLNonNull(GraphQLID) }
+      receiverId: { 
+        type: GraphQLID,
+      },
+      receiverName: { type: GraphQLString, },
+      address1: { type: GraphQLString, },
+      address2: { type: GraphQLString, },
+      detailAddress: { type: GraphQLString, },
+      profileImage: { 
+        type: GraphQLID,
+      },
+      numberOfSent: { type: GraphQLInt, },
+      numberOfReceived: { type: GraphQLInt, },
     },
     resolve(root, args, req, ctx) {
-      console.log("첫번째")
+      let address = new model(args);
+      return address.save();
     }
   },
   updateAddress: {
     type: AddressType,
     args: {
-      id: { type: new GraphQLNonNull(GraphQLID) }
+      id: { type: GraphQLID },
+      receiverId: { 
+        type: GraphQLID,
+      },
+      receiverName: { type: GraphQLString, },
+      address1: { type: GraphQLString, },
+      address2: { type: GraphQLString, },
+      detailAddress: { type: GraphQLString, },
+      profileImage: { 
+        type: GraphQLID,
+      },
+      numberOfSent: { type: GraphQLInt, },
+      numberOfReceived: { type: GraphQLInt, },
     },
     resolve(root, args, req, ctx) {
-      console.log("첫번째")
+      let id = args.id;
+      delete args.id;
+      return model.findByIdAndUpdate(id, args, { new: true });
     }
   },
   deleteAddress: {
@@ -85,8 +114,9 @@ const Mutation = {
     args: {
       id: { type: new GraphQLNonNull(GraphQLID) }
     },
-    resolve(root, args, req, ctx) {
-      console.log("뮤테이션")
+    async resolve(root, args, req, ctx) {
+      if (await model.findByIdAndDelete(args.id)) return true;
+      return false;
     }
   },
 }

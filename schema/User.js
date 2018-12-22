@@ -43,7 +43,6 @@ const UserType = new GraphQLObjectType({
     profileImage: {
       type: MediaType,
       resolve(parent, args) {
-        console.log(parent)
         return Media.findById(parent.profileImage);
       }
     },
