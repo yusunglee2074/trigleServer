@@ -48,7 +48,7 @@ const MailType = new GraphQLObjectType({
       }
     },
     receiverId: {
-      type: User,
+      type: UserType,
       resolve(parent, args) {
         return Media.findById(parent.receiverId);
       }
