@@ -4,21 +4,21 @@ const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const mailSchema = new Schema({
-    receiver: String,
-    receiverId: String,
-    sender: String,
-    senderId: String,
-    content: String,
-    paperId: String,
-    envelopeId: String,
-    numberOfWord: Number,
-    missing: Boolean,
-    likes: Number ,
-    images: String,
-    videos: String,
+  receiver: String,
+  receiverId: String,
+  sender: String,
+  senderId: String,
+  content: String,
+  paperId: String,
+  envelopeId: String,
+  numberOfWord: Number,
+  missing: Boolean,
+  likes: Number ,
+  images: String,
+  videos: String,
   price: Number,
-    createdAt: Date,
-    willSendAt: Date
+  createdAt: Date,
+  willSendAt: Date
 })
 
 let model = mongoose.model('Mail', mailSchema);
