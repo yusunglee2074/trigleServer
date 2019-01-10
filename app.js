@@ -41,15 +41,18 @@ mongoose.connect('mongodb://' + dbConnection.host, { useNewUrlParser: true }, (e
 
 let context = {}
 
-app.use('/graphql', graphqlHTTP((req, res) => ({
-  schema,
-  //rootValue,
-  context: {
-    ...context,
-    req
-  },
-  graphiql: true,
-})));
+app.use('/graphql', graphqlHTTP((req, res) => {
+  console.log(req)
+  return ({
+    schema,
+    //rootValue,
+    context: {
+      ...context,
+      req
+    },
+    graphiql: true,
+  });
+}));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
