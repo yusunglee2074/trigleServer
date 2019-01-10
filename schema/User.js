@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
+const bcrypt = require('bcrypt');
 
 const userSchema = new Schema({
-  loginId: String,
+  email: String,
   password: String,
   name: String,
   nickname: String,
@@ -21,6 +22,8 @@ const userSchema = new Schema({
   numberOfStamps: Number,
   createdAt: Date,
   updatedAt: Date,
+
+  accessToken: String,
 });
 let model = mongoose.model('User', userSchema);
 
@@ -31,7 +34,7 @@ const UserType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
     id: { type: new GraphQLNonNull(GraphQLID), },
-    loginId: { type: GraphQLString, },
+    email: { type: GraphQLString, },
     password: { type: GraphQLString, },
     name: { type: GraphQLString, },
     nickname: { type: GraphQLString, },
@@ -48,6 +51,8 @@ const UserType = new GraphQLObjectType({
     },
     numberOfStamps: { type: GraphQLInt, },
     createdAt: { type: GraphQLString, },
+
+    accessToken: { type: GraphQLString, },
   }),
 });
 
@@ -73,31 +78,27 @@ const Mutation = {
   createUser: {
     type: UserType,
     args: {
-      loginId: { type: GraphQLString, },
+      email: { type: GraphQLString, },
       password: { type: GraphQLString, },
-      name: { type: GraphQLString, },
-      nickname: { type: GraphQLString, },
-      age: { type: GraphQLInt, },
-      replyRate: { type: GraphQLInt, },
-      lastOnlinedAt: { type: GraphQLString, },
-      gender: { type: GraphQLString, },
-      birthday: { type: GraphQLString, },
-      profileImage: { 
-        type: GraphQLID,
-      },
-      numberOfStamps: { type: GraphQLInt, },
     },
     resolve(root, args, req, ctx) {
       args.createdAt = new Date().toISOString();
-      let user = new model(args);
-      return user.save();
+
+      return bcrypt.hash(args.password, 10)
+        .then(function(hash) {
+          args.password = hash;
+          args.accessToken = hash.slice(0, 10);
+          user = new model(args);
+          return user.save();
+        })
+        .catch(e => next(e));
     }
   },
   updateUser: {
     type: UserType,
     args: {
       id: { type: GraphQLID },
-      loginId: { type: GraphQLString, },
+      email: { type: GraphQLString, },
       password: { type: GraphQLString, },
       name: { type: GraphQLString, },
       nickname: { type: GraphQLString, },
