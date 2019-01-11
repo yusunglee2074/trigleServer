@@ -80,13 +80,15 @@ const Mutation = {
     args: {
       email: { type: GraphQLString, },
       password: { type: GraphQLString, },
+      profileImgIdx: { type: GraphQLString, },
     },
     async resolve(root, args, req, ctx) {
-      // 이미 가입된 이메일 있는지 체크
       let users = await model.find({ email: args.email });
       if (users.length) throw "email already exist";
 
       args.createdAt = new Date().toISOString();
+      let media = await Media.findOne({ text: "users" + (Number(args.profileImgIdx) + 1) });
+      args.profileImage = media.id;
       return bcrypt.hash(args.password, 10)
         .then(function(hash) {
           args.password = hash;
