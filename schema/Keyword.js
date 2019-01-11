@@ -4,7 +4,9 @@ const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const keywordSchema = new Schema({
-    name: String
+  name: String,
+  isDefaultKeyword: Boolean,
+  keyword: String,
 });
 
 let model = mongoose.model('Keyword', keywordSchema);
@@ -14,7 +16,7 @@ const KeywordType = new GraphQLObjectType({
   fields: () => ({
     id: { type: new GraphQLNonNull(GraphQLID), },
     keyword: { type: GraphQLString, },
-    type: { type: GraphQLString, },
+    isDefaultKeyword: { type: GraphQLBoolean, },
   }),
 });
 
@@ -30,8 +32,15 @@ const Query = {
   },
   keywords: {
     type: new GraphQLList(KeywordType),
+    args: {
+      isDefaultKeyword: { type: GraphQLBoolean },
+      keyword: { type: GraphQLString },
+    },
     resolve(root, args, req, ctx) {
-      return model.find({});
+      const where = {};
+      args.hasOwnProperty('isDefaultKeyword') ? where['isDefaultKeyword'] = args.isDefaultKeyword : null; 
+      args.hasOwnProperty('keyword') ? where['keyword'] = new RegExp(args.keyword) : null; 
+      return model.find(where);
     }
   }
 }
@@ -41,7 +50,7 @@ const Mutation = {
     type: KeywordType,
     args: {
       keyword: { type: GraphQLString, },
-      type: { type: GraphQLString, },
+      isDefaultKeyword: { type: GraphQLBoolean, },
     },
     resolve(root, args, req, ctx) {
       let keyword = new model(args);
@@ -51,8 +60,9 @@ const Mutation = {
   updateKeyword: {
     type: KeywordType,
     args: {
+      id: { type: GraphQLID, },
       keyword: { type: GraphQLString, },
-      type: { type: GraphQLString, },
+      isDefaultKeyword: { type: GraphQLBoolean, },
     },
     resolve(root, args, req, ctx) {
       let id = args.id;
