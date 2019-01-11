@@ -3,8 +3,12 @@
 # Edit at https://www.gitignore.io/?templates=node
 #
 #
+# mac
+#
+.DS_Store
 # vim
 *.swp
+
 
 ### Node ###
 # Logs
