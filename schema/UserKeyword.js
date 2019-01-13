@@ -45,8 +45,12 @@ const Query = {
   },
   userKeywords: {
     type: new GraphQLList(UserKeywordType),
+    args: {
+      userId: { type: GraphQLID }
+    },
     resolve(root, args, req, ctx) {
-      return model.find({});
+      const where = args.userId ? { userId: args.userId } : {};
+      return model.find(where);
     }
   }
 }
