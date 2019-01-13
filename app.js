@@ -42,7 +42,7 @@ mongoose.connect('mongodb://' + dbConnection.host, { useNewUrlParser: true }, (e
 let context = {}
 
 app.use('/graphql', graphqlHTTP((req, res) => {
-  console.log(req)
+  //console.log(req)
   return ({
     schema,
     //rootValue,
