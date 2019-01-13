@@ -4,8 +4,8 @@ const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const userKeywordSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User' },
-  keywordId: { type: Schema.Types.ObjectId, ref: 'Keyword' },
+  userId: { type: String },
+  keywordId: { type: String },
 });
 let model = mongoose.model('UserKeyword', userKeywordSchema);
 
