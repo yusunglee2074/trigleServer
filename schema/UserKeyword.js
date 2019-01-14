@@ -52,7 +52,46 @@ const Query = {
       const where = args.userId ? { userId: args.userId } : {};
       return model.find(where);
     }
-  }
+  },
+  friendlyUsersByKeywords: {
+    type: new GraphQLList(new GraphQLObjectType({
+      name: 'friendlyUsers',
+      fields: () => ({
+        _id: { 
+          type: UserType,
+          resolve(parent, args) {
+            return User.findById(parent._id);
+          }
+        },
+        keywords: { type: new GraphQLList(GraphQLString), },
+        bothKeywords: { type: new GraphQLList(GraphQLString), },
+        sizeOfBothKeywords: { type: GraphQLInt, },
+      }),
+    })),
+    args: {
+      userId: { type: GraphQLID }
+    },
+    async resolve(root, args, req, ctx) {
+      let temp = [ "5c3851a16e68c617d05e77c5" ]
+      let userKeywords = await model
+        .aggregate([
+          { $match: { userId: args.userId } },
+          { $group: { _id: "$userId", keywords: { $push: "$keywordId" } } }
+        ]);
+
+      return await model
+        .aggregate([
+          // stage1
+          { $group: { _id: "$userId", keywords: { $push: "$keywordId" } } },
+          // stage2
+          { $project: { _id: 1, keywords: 1, bothKeywords: { $setIntersection: [ "$keywords", userKeywords[0]["keywords"] ] } } },
+          { $project: { _id: 1, keywords: 1, bothKeywords: 1, sizeOfBothKeywords: { $size: "$bothKeywords" } } },
+          { $match: { _id: { $ne: args.userId } } },
+          { $sort: { sizeOfBothKeywords: -1 } }
+        ]);
+    }
+  },
+  
 }
 
 const Mutation = {
