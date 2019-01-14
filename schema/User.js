@@ -27,9 +27,6 @@ const userSchema = new Schema({
 });
 let model = mongoose.model('User', userSchema);
 
-const Media = require('./Media').model
-const MediaType = require('./Media').MediaType
-
 const UserType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
@@ -53,6 +50,12 @@ const UserType = new GraphQLObjectType({
     createdAt: { type: GraphQLString, },
 
     accessToken: { type: GraphQLString, },
+    keywords: { 
+      type: new GraphQLList(UserKeywordType),
+      resolve(parent, args) {
+        return UserKeyword.find({ userId: parent.id });
+      }
+    },
   }),
 });
 
@@ -71,7 +74,7 @@ const Query = {
     resolve(root, args, req, ctx) {
       return model.find({});
     }
-  }
+  },
 }
 
 const Mutation = {
@@ -137,3 +140,8 @@ const Mutation = {
 }
 
 module.exports = { model, UserType, Query, Mutation };
+
+const Media = require('./Media').model
+const MediaType = require('./Media').MediaType
+const UserKeyword = require('./UserKeyword').model;
+const UserKeywordType = require('./UserKeyword').UserKeywordType
