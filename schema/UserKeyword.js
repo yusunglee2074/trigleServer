@@ -63,12 +63,6 @@ const Query = {
             return User.findById(parent._id);
           }
         },
-        myKeywords: { 
-          type: new GraphQLList(KeywordType), 
-          resolve(parent, args) {
-            return Keyword.find({ _id: { $in: parent.myKeywords } });
-          }
-        },
         bothKeywords: { 
           type: new GraphQLList(KeywordType), 
           resolve(parent, args) {
@@ -82,7 +76,6 @@ const Query = {
       userId: { type: GraphQLID }
     },
     async resolve(root, args, req, ctx) {
-      let temp = [ "5c3851a16e68c617d05e77c5" ]
       let userKeywords = await model
         .aggregate([
           { $match: { userId: args.userId } },
@@ -92,10 +85,10 @@ const Query = {
       return await model
         .aggregate([
           // stage1
-          { $group: { _id: "$userId", myKeywords: { $push: "$keywordId" } } },
+          { $group: { _id: "$userId", keywords: { $push: "$keywordId" } } },
           // stage2
-          { $project: { _id: 1, myKeywords: 1, bothKeywords: { $setIntersection: [ "$myKeywords", userKeywords[0]["myKeywords"] ] } } },
-          { $project: { _id: 1, myKeywords: 1, bothKeywords: 1, sizeOfBothKeywords: { $size: "$bothKeywords" } } },
+          { $project: { _id: 1, keywords: 1, bothKeywords: { $setIntersection: [ "$keywords", userKeywords[0]["myKeywords"] ] } } },
+          { $project: { _id: 1, keywords: 1, bothKeywords: 1, sizeOfBothKeywords: { $size: "$bothKeywords" } } },
           { $match: { _id: { $ne: args.userId } } },
           { $sort: { sizeOfBothKeywords: -1 } }
         ]);
