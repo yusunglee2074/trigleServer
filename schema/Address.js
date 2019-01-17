@@ -4,6 +4,7 @@ const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 
 const addressSchema = new Schema({
+    userId: String,
     receiverName: String,
     receiverId: String,
     address1: String,
@@ -25,6 +26,12 @@ const AddressType = new GraphQLObjectType({
   name: 'Address',
   fields: () => ({
     id: { type: GraphQLNonNull(GraphQLID), },
+    userId: { 
+      type: UserType,
+      resolve(parent, args) {
+        return User.findById(parent.userId);
+      }
+    },
     receiverId: { 
       type: UserType,
       resolve(parent, args) {
@@ -50,16 +57,20 @@ const Query = {
   address: {
     type: AddressType,
     args: {
-      id: { type: new GraphQLNonNull(GraphQLID) }
+      userId: { type: new GraphQLNonNull(GraphQLID) },
+      receiverId: { type: new GraphQLNonNull(GraphQLID) },
     },
     resolve(root, args, req, ctx) {
-      return model.findById(args.id);
+      return model.findOne({ userId: args.userId, receiverId: args.receiverId });
     }
   },
   addresses: {
     type: new GraphQLList(AddressType),
+    args: {
+      userId: { type: new GraphQLNonNull(GraphQLID) },
+    },
     resolve(root, args, req, ctx) {
-      return model.find({});
+      return model.find({ userId: args.userId });
     }
   }
 }
@@ -68,6 +79,9 @@ const Mutation = {
   createAddress: {
     type: AddressType,
     args: {
+      userId: { 
+        type: GraphQLID,
+      },
       receiverId: { 
         type: GraphQLID,
       },
@@ -112,10 +126,11 @@ const Mutation = {
   deleteAddress: {
     type: GraphQLBoolean,
     args: {
-      id: { type: new GraphQLNonNull(GraphQLID) }
+      userId: { type: new GraphQLNonNull(GraphQLID) },
+      receiverId: { type: new GraphQLNonNull(GraphQLID) },
     },
     async resolve(root, args, req, ctx) {
-      if (await model.findByIdAndDelete(args.id)) return true;
+      if (await model.remove({ userId: args.userId, receiverId: args.receiverId })) return true;
       return false;
     }
   },
