@@ -57,11 +57,16 @@ const Query = {
   address: {
     type: AddressType,
     args: {
+      id: { type: new GraphQLNonNull(GraphQLID) },
       userId: { type: new GraphQLNonNull(GraphQLID) },
       receiverId: { type: new GraphQLNonNull(GraphQLID) },
     },
     resolve(root, args, req, ctx) {
-      return model.findOne({ userId: args.userId, receiverId: args.receiverId });
+      const where = {}
+      if (args.userId) where.userId = args.userId;
+      if (args.id) where.id = args.id;
+      if (args.receiverId) where.receiverId = args.receiverId;
+      return model.findOne(where);
     }
   },
   addresses: {
