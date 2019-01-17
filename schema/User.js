@@ -3,6 +3,9 @@ const Schema = mongoose.Schema;
 const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
 const bcrypt = require('bcrypt');
+const {
+  GraphQLDateTime
+} = require('graphql-iso-date');
 
 const userSchema = new Schema({
   email: String,
@@ -39,6 +42,9 @@ const UserType = new GraphQLObjectType({
     replyRate: { type: GraphQLInt, },
     lastOnlinedAt: { type: GraphQLString, },
     gender: { type: GraphQLString, },
+    address1: { type: GraphQLString, },
+    address2: { type: GraphQLString, },
+    detailAddress: { type: GraphQLString, },
     birthday: { type: GraphQLString, },
     profileImage: {
       type: MediaType,
@@ -47,9 +53,20 @@ const UserType = new GraphQLObjectType({
       }
     },
     numberOfStamps: { type: GraphQLInt, },
-    createdAt: { type: GraphQLString, },
 
     accessToken: { type: GraphQLString, },
+    updatedAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.updatedAt);
+      }
+    },
+    createdAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.createdAt);
+      }
+    },
     keywords: { 
       type: new GraphQLList(UserKeywordType),
       resolve(parent, args) {
