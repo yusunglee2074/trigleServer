@@ -13,6 +13,7 @@ const addressSchema = new Schema({
     profileImage: String,
     numberOfSent: Number,
     numberOfReceived: Number,
+    phoneNumber: String,
 });
 const model = mongoose.model('Address', addressSchema);
 
@@ -41,6 +42,7 @@ const AddressType = new GraphQLObjectType({
     receiverName: { type: GraphQLString, },
     address1: { type: GraphQLString, },
     address2: { type: GraphQLString, },
+    phoneNumber: { type: GraphQLString, },
     detailAddress: { type: GraphQLString, },
     profileImage: { 
       type: MediaType,
@@ -57,14 +59,14 @@ const Query = {
   address: {
     type: AddressType,
     args: {
-      id: { type: new GraphQLNonNull(GraphQLID) },
-      userId: { type: new GraphQLNonNull(GraphQLID) },
-      receiverId: { type: new GraphQLNonNull(GraphQLID) },
+      id: { type: GraphQLID },
+      userId: { type: GraphQLID },
+      receiverId: { type: GraphQLID },
     },
     resolve(root, args, req, ctx) {
       const where = {}
       if (args.userId) where.userId = args.userId;
-      if (args.id) where.id = args.id;
+      if (args.id) where._id = args.id;
       if (args.receiverId) where.receiverId = args.receiverId;
       return model.findOne(where);
     }
