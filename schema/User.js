@@ -135,6 +135,9 @@ const Mutation = {
       profileImage: { 
         type: GraphQLID,
       },
+      address1: { type: GraphQLString, },
+      address2: { type: GraphQLString, },
+      detailAddress: { type: GraphQLString, },
       numberOfStamps: { type: GraphQLInt, },
     },
     resolve(root, args, req, ctx) {
