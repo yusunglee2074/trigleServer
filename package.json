@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node --inspect ./bin/www"
   },
   "dependencies": {
     "bcrypt": "^3.0.3",
@@ -11,13 +11,13 @@
     "debug": "~2.6.9",
     "express": "~4.16.0",
     "express-graphql": "^0.7.1",
-    "graphql": "^14.0.2",
+    "graphql": "^14.1.1",
     "graphql-iso-date": "^3.6.1",
     "http-errors": "~1.6.2",
     "jade": "~1.11.0",
     "moment": "^2.23.0",
-    "mongoose": "^5.3.14",
+    "mongoose": "^5.4.5",
     "morgan": "~1.9.0",
-    "nodemon": "^1.18.7"
+    "nodemon": "^1.18.9"
   }
 }
