@@ -2,23 +2,26 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
+const {
+  GraphQLDateTime
+} = require('graphql-iso-date');
+const moment = require('moment');
 
 const mailSchema = new Schema({
-  receiver: String,
-  receiverId: String,
+  receiverAddressId: String,
   sender: String,
   senderId: String,
   content: String,
   paperId: String,
   envelopeId: String,
-  numberOfWord: Number,
-  missing: Boolean,
-  likes: Number ,
+  likes: Number,
   images: String,
-  videos: String,
+  video: String,
   price: Number,
   createdAt: Date,
-  willSendAt: Date
+  willSendAt: Date,
+  isOffline: Boolean,
+  isNormalPost: Boolean,
 })
 
 let model = mongoose.model('Mail', mailSchema);
@@ -29,28 +32,29 @@ const User = require('./User').model
 const UserType = require('./User').UserType
 const ExtraEnv = require('./ExtraEnv').model
 const ExtraEnvType = require('./ExtraEnv').ExtraEnvType
+const Address = require('./Address').model
+const AddressType = require('./Address').AddressType
 
 const MailType = new GraphQLObjectType({
   name: 'Mail',
   fields: () => ({
     id: { type: new GraphQLNonNull(GraphQLID), },
-    receiver: { type: GraphQLString, },
+    receiverAddressId: { 
+      type: AddressType,
+      resolve(parent, args) {
+        return Address.findById(parent.receiverAddressId);
+      }
+    },
     sender: { type: GraphQLString, },
     content: { type: GraphQLString, },
-    numberOfWord: { type: GraphQLInt, },
-    missing: { type: GraphQLBoolean, },
+    isNormalPost: { type: GraphQLBoolean, },
+    isOffline: { type: GraphQLBoolean, },
     likes: { type: GraphQLInt, },
     price: { type: GraphQLInt, },
     senderId: {
       type: UserType,
       resolve(parent, args) {
         return User.findById(parent.senderId);
-      }
-    },
-    receiverId: {
-      type: UserType,
-      resolve(parent, args) {
-        return Media.findById(parent.receiverId);
       }
     },
     paperId: {
@@ -71,31 +75,51 @@ const MailType = new GraphQLObjectType({
         return Media.findById(parent.images);
       }
     },
-    videos: {
+    video: {
       type: MediaType,
       resolve(parent, args) {
-        return Media.findById(parent.videos);
+        return Media.findById(parent.video);
       }
     },
-    willSendAt: { type: GraphQLString, },
-    createdAt: { type: GraphQLString, },
+    willSendAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.willSendAt);
+      }
+    },
+    createdAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.createdAt);
+      }
+    },
   }),
 });
 
 const Query = {
-  mail: {
-    type: MailType,
-    args: {
-      id: { type: new GraphQLNonNull(GraphQLID) }
+    mail: {
+        type: MailType,
+        args: {
+          id: { type: new GraphQLNonNull(GraphQLID) }
+        },
+        resolve(root, args, req, ctx) {
+          return model.findById(args.id);
+        }
     },
-    resolve(root, args, req, ctx) {
-      return model.findById(args.id);
-    }
-  },
   mails: {
     type: new GraphQLList(MailType),
+    args: {
+      senderId: { type: GraphQLID },
+      isOffline: { type: GraphQLBoolean },
+    },
     resolve(root, args, req, ctx) {
-      return model.find({});
+      if (args.isOffline === false) {
+        return model.aggregate([
+          { $match: { isOffline: false } },
+          { $addFields: { id: "$_id" } }
+        ]);
+      }
+      return model.find({senderId: args.senderId});
     }
   }
 }
@@ -104,17 +128,11 @@ const Mutation = {
   createMail: {
     type: MailType,
     args: {
-      receiver: { type: GraphQLString, },
+      receiverAddressId: { type: GraphQLID, },
       sender: { type: GraphQLString, },
       content: { type: GraphQLString, },
-      numberOfWord: { type: GraphQLInt, },
-      missing: { type: GraphQLBoolean, },
-      likes: { type: GraphQLInt, },
       price: { type: GraphQLInt, },
       senderId: {
-        type: GraphQLID,
-      },
-      receiverId: {
         type: GraphQLID,
       },
       paperId: {
@@ -126,13 +144,29 @@ const Mutation = {
       images: {
         type: GraphQLID,
       },
-      videos: {
+      video: {
         type: GraphQLID,
       },
-      willSendAt: { type: GraphQLString, },
+      isOffline: { type: GraphQLBoolean },
+      isNormalPost: { type: GraphQLBoolean },
     },
     resolve(root, args, req, ctx) {
+      let willSendAt;
+      if (args.isNormalPost) {
+        willSendAt = moment().add(10, 'day')
+        while (willSendAt.day() === 6 && willSendAt.day() === 0) {
+          willSendAt.add(1, 'day');
+        }
+      }
+      else {
+        willSendAt = moment().add(4, 'day')
+        while (willSendAt.day() === 6 && willSendAt.day() === 0) {
+          willSendAt.add(1, 'day');
+        }
+      }
       args.createdAt = new Date().toISOString();
+      args.likes = 0;
+      args.willSendAt = willSendAt.toISOString();
       let mail = new model(args);
       return mail.save();
     }
@@ -141,17 +175,14 @@ const Mutation = {
     type: MailType,
     args: {
       id: { type: new GraphQLNonNull(GraphQLID), },
-      receiver: { type: GraphQLString, },
+      isOffline: { type: GraphQLBoolean },
+      receiverAddressId: { type: GraphQLID, },
       sender: { type: GraphQLString, },
       content: { type: GraphQLString, },
-      numberOfWord: { type: GraphQLInt, },
-      missing: { type: GraphQLBoolean, },
+      isNormalPost: { type: GraphQLBoolean, },
       likes: { type: GraphQLInt, },
       price: { type: GraphQLInt, },
       senderId: {
-        type: GraphQLID,
-      },
-      receiverId: {
         type: GraphQLID,
       },
       paperId: {
@@ -163,7 +194,7 @@ const Mutation = {
       images: {
         type: GraphQLID,
       },
-      videos: {
+      video: {
         type: GraphQLID,
       },
       willSendAt: { type: GraphQLString, },
