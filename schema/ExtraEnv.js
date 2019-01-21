@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
+const {
+  GraphQLDateTime
+} = require('graphql-iso-date');
 
 const extraEnvSchema = new Schema({
     type: String,
@@ -30,8 +33,18 @@ const ExtraEnvType = new GraphQLObjectType({
         return Media.findById(parent.profileImage);
       }
     },
-    createdAt: { type: GraphQLString, },
-    updatedAt: { type: GraphQLString, },
+    updatedAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.updatedAt);
+      }
+    },
+    createdAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.createdAt);
+      }
+    },
   }),
 });
 
