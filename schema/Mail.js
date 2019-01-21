@@ -9,6 +9,7 @@ const moment = require('moment');
 
 const mailSchema = new Schema({
   receiverAddressId: String,
+  receiverId: String,
   sender: String,
   senderId: String,
   content: String,
@@ -43,6 +44,12 @@ const MailType = new GraphQLObjectType({
       type: AddressType,
       resolve(parent, args) {
         return Address.findById(parent.receiverAddressId);
+      }
+    },
+    receiverId: { 
+      type: UserType,
+      resolve(parent, args) {
+        return User.findById(parent.receiverId);
       }
     },
     sender: { type: GraphQLString, },
@@ -97,31 +104,40 @@ const MailType = new GraphQLObjectType({
 });
 
 const Query = {
-    mail: {
-        type: MailType,
-        args: {
-          id: { type: new GraphQLNonNull(GraphQLID) }
-        },
-        resolve(root, args, req, ctx) {
-          return model.findById(args.id);
-        }
-    },
-  mails: {
-    type: new GraphQLList(MailType),
+  mail: {
+    type: MailType,
     args: {
-      senderId: { type: GraphQLID },
-      isOffline: { type: GraphQLBoolean },
+      id: { type: new GraphQLNonNull(GraphQLID) }
     },
     resolve(root, args, req, ctx) {
-      if (args.isOffline === false) {
-        return model.aggregate([
-          { $match: { isOffline: false } },
-          { $addFields: { id: "$_id" } }
-        ]);
-      }
-      return model.find({senderId: args.senderId});
+      return model.findById(args.id);
     }
-  }
+  },
+  getOnlineMails: {
+    type: new GraphQLList(MailType),
+    args: {
+    },
+    resolve(root, args, req, ctx) {
+      return model.aggregate([
+        { $match: { isOffline: false } },
+        { $addFields: { id: "$_id" } },
+        { $sort: { createdAt: -1 } }
+      ]);
+    }
+  },
+  getOfflineMails: {
+    type: new GraphQLList(MailType),
+    args: {
+      senderId: { type: new GraphQLNonNull(GraphQLID) }
+    },
+    resolve(root, args, req, ctx) {
+      return model.aggregate([
+        { $match: { isOffline: true, senderId: args.senderId } },
+        { $addFields: { id: "$_id" } },
+        { $sort: { createdAt: -1 } }
+      ]);
+    }
+  },
 }
 
 const Mutation = {
@@ -129,6 +145,7 @@ const Mutation = {
     type: MailType,
     args: {
       receiverAddressId: { type: GraphQLID, },
+      receiverId: { type: GraphQLID, },
       sender: { type: GraphQLString, },
       content: { type: GraphQLString, },
       price: { type: GraphQLInt, },
@@ -177,6 +194,7 @@ const Mutation = {
       id: { type: new GraphQLNonNull(GraphQLID), },
       isOffline: { type: GraphQLBoolean },
       receiverAddressId: { type: GraphQLID, },
+      receiverId: { type: GraphQLID, },
       sender: { type: GraphQLString, },
       content: { type: GraphQLString, },
       isNormalPost: { type: GraphQLBoolean, },
