@@ -15,7 +15,6 @@ const mailSchema = new Schema({
   content: String,
   paperId: String,
   envelopeId: String,
-  likes: Number,
   images: String,
   video: String,
   price: Number,
@@ -27,14 +26,6 @@ const mailSchema = new Schema({
 
 let model = mongoose.model('Mail', mailSchema);
 
-const Media = require('./Media').model
-const MediaType = require('./Media').MediaType
-const User = require('./User').model
-const UserType = require('./User').UserType
-const ExtraEnv = require('./ExtraEnv').model
-const ExtraEnvType = require('./ExtraEnv').ExtraEnvType
-const Address = require('./Address').model
-const AddressType = require('./Address').AddressType
 
 const MailType = new GraphQLObjectType({
   name: 'Mail',
@@ -56,7 +47,12 @@ const MailType = new GraphQLObjectType({
     content: { type: GraphQLString, },
     isNormalPost: { type: GraphQLBoolean, },
     isOffline: { type: GraphQLBoolean, },
-    likes: { type: GraphQLInt, },
+    likes: { 
+      type: new GraphQLList(LikeType),
+      resolve(parent, args) {
+        return Like.find({ mailId: parent.id })
+      }
+    },
     price: { type: GraphQLInt, },
     senderId: {
       type: UserType,
@@ -86,6 +82,12 @@ const MailType = new GraphQLObjectType({
       type: MediaType,
       resolve(parent, args) {
         return Media.findById(parent.video);
+      }
+    },
+    comments: {
+      type: new GraphQLList(CommentType),
+      resolve(parent, args) {
+        return Comment.find({ mailId: parent.id });
       }
     },
     willSendAt: { 
@@ -182,7 +184,6 @@ const Mutation = {
         }
       }
       args.createdAt = new Date().toISOString();
-      args.likes = 0;
       args.willSendAt = willSendAt.toISOString();
       let mail = new model(args);
       return mail.save();
@@ -198,7 +199,6 @@ const Mutation = {
       sender: { type: GraphQLString, },
       content: { type: GraphQLString, },
       isNormalPost: { type: GraphQLBoolean, },
-      likes: { type: GraphQLInt, },
       price: { type: GraphQLInt, },
       senderId: {
         type: GraphQLID,
@@ -236,3 +236,15 @@ const Mutation = {
 }
 
 module.exports = { model, MailType, Query, Mutation };
+const Comment = require('./Comment').model
+const CommentType = require('./Comment').CommentType
+const Media = require('./Media').model
+const MediaType = require('./Media').MediaType
+const User = require('./User').model
+const UserType = require('./User').UserType
+const ExtraEnv = require('./ExtraEnv').model
+const ExtraEnvType = require('./ExtraEnv').ExtraEnvType
+const Address = require('./Address').model
+const AddressType = require('./Address').AddressType
+const Like = require('./Like').model
+const LikeType = require('./Like').LikeType
