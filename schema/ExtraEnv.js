@@ -9,7 +9,7 @@ const {
 const extraEnvSchema = new Schema({
     type: String,
     title: String,
-    contents: String,
+    content: String,
     userId: String,
     createdAt: Date,
     updatedAt: Date,
@@ -60,8 +60,11 @@ const Query = {
   },
   extraEnvs: {
     type: new GraphQLList(ExtraEnvType),
+    args: {
+      type: { type: new GraphQLNonNull(GraphQLString) }
+    },
     resolve(root, args, req, ctx) {
-      return model.find({});
+      return model.find({ type: args.type });
     }
   }
 }
