@@ -2,22 +2,19 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const graphql = require('graphql');
 const { GraphQLEnumType, GraphQLInterfaceType, GraphQLObjectType, GraphQLList, GraphQLNonNull, GraphQLSchema, GraphQLString, GraphQLID, GraphQLInt, GraphQLBoolean } = graphql;
+const {
+  GraphQLDateTime
+} = require('graphql-iso-date');
 
 const commentSchema = new Schema({
     userId: String,
     content: String,
-    nickname: String,
-    profileImage: String,
+    mailId: String,
     createdAt: Date,
     updatedAt: Date,
 });
 
 let model = mongoose.model('Comment', commentSchema);
-
-const Media = require('./Media').model
-const MediaType = require('./Media').MediaType
-const User = require('./User').model
-const UserType = require('./User').UserType
 
 const CommentType = new GraphQLObjectType({
   name: 'Comment',
@@ -29,16 +26,25 @@ const CommentType = new GraphQLObjectType({
         return User.findById(parent.userId);
       }
     },
-    content: { type: GraphQLString, },
-    nickname: { type: GraphQLString, },
-    profileImage: {
-      type: MediaType,
+    mailId: {
+      type: MailType,
       resolve(parent, args) {
-        return Media.findById(parent.profileImage);
+        return Mail.findById(parent.mailId);
       }
     },
-    createdAt: { type: GraphQLString, },
-    updatedAt: { type: GraphQLString, },
+    content: { type: GraphQLString, },
+    updatedAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.updatedAt);
+      }
+    },
+    createdAt: { 
+      type: GraphQLDateTime,
+      resolve(parent, args) {
+        return new Date(parent.createdAt);
+      }
+    },
   }),
 });
 
@@ -67,11 +73,9 @@ const Mutation = {
       userId: {
         type: GraphQLID
       },
+      mailId: { type: GraphQLID },
       content: { type: GraphQLString, },
-      nickname: { type: GraphQLString, },
-      profileImage: {
-        type: GraphQLID
-      },
+
     },
     resolve(root, args, req, ctx) {
       args.createdAt = new Date().toISOString();
@@ -86,10 +90,6 @@ const Mutation = {
         type: GraphQLID
       },
       content: { type: GraphQLString, },
-      nickname: { type: GraphQLString, },
-      profileImage: {
-        type: GraphQLID
-      },
     },
     resolve(root, args, req, ctx) {
       let id = args.id;
@@ -111,3 +111,8 @@ const Mutation = {
 }
 
 module.exports = { model, CommentType, Query, Mutation };
+const Mail = require('./Mail').model
+const MailType = require('./Mail').MailType
+const User = require('./User').model
+const UserType = require('./User').UserType
+
